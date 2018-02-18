@@ -3,10 +3,8 @@ clear all
 %for mainlooop=0:6
 for mainlooop=0:6
     % for mainlooop=-3
-    clear stor_tr
-    clear stor_tr_crude
-    clear stor_t_crude
-clear stor_t
+    clear stored_xyz
+    clear stored_t
     main_ratio=90;
     
     figure(1)
@@ -31,7 +29,7 @@ clear stor_t
     list_of_values= 0.00:1:main_ratio+1;
     loops = 360;
     loops = 1;
-    count_sto=1;
+    count_stored_points=1;
     F(size(list_of_values,2)+1) = struct('cdata',[],'colormap',[]);
     counter_frames=1;
     
@@ -56,6 +54,7 @@ clear stor_t
     if mainlooop==6 tau=0.05;end
     
     for t = 0:0.000001:tmax
+        title_text='';
         % for t = 0:0.000001:0.05
         % X = sin(loopj*pi/10)*Z;
         %surf(X,Z)
@@ -83,9 +82,8 @@ clear stor_t
             end
             
         else
-            tim=400;
-            rf_ref=20;
-fa=1;
+           
+            fa=1;
             tim=400*fa;
             rf_ref=20*fa;
             if t<(1/tim)
@@ -116,6 +114,7 @@ fa=1;
             end
             
         end
+        
         di=cross([rf 0 larmo ],pos_mag);
         %  di=di/norm(pos_mag);
         
@@ -133,39 +132,29 @@ fa=1;
         
         nu_eff=sqrt(loop_offset*loop_offset+ampli_hz*ampli_hz);
         
-        %
-        %      how_much_further=2;
-        %     if size(factor,2)==1
-        %         plot3(how_much_further*[0 sin(tilt_angle)],[0 0],how_much_further*[0 cos(tilt_angle)],'k--')
-        %         text(how_much_further*[sin(tilt_angle)],[ 0],how_much_further*[ cos(tilt_angle)],'Beff')
-        %
-        %     end
-        %     %%%%%%%%%%%%%%%%%
-        %
-        %
-        
-        
-        
-        %    figure('Units','inches', 'PaperPositionMode','auto', 'Position',[0 0 4 4]);
-        
-        
-        
-        
         
         %work on figure
-        if mod(round(t*1e6),500)==0
-            where_low=-3;
+        show_every_pt=500;% plot every ... step
+        if mod(round(t*1e6),show_every_pt)==0
+            where_low=-3;%vertical position of the plot of the projections
             disp(['time: ' num2str(t) '/' max(num2str(tmax)) ' ' num2str(rf)] )
+            
+            % call main plotting function
             fig_gen_spheres(pos_mag)
+            
             % store last point for full trajectory plot
-            stor_tr_crude(count_sto,:)=pos_mag(1,:);
-            stor_t_crude(count_sto,:)=t;
-            count_sto=count_sto+1;
-            % interpolation of
-            [stor_tr, stor_t]=interp_to_smooth(stor_tr_crude,stor_t_crude);
-            plot3(stor_tr(:,1),stor_tr(:,2),stor_tr(:,3),'k-','linewidth',1.25)
+            stored_xyz(count_stored_points,:)=pos_mag(1,:);
+            stored_t(count_stored_points,:)=t;
+            count_stored_points=count_stored_points+1;
+            % interpolation of (to avoid steps during hard pulses, in
+            % particular...
+            [interp_xyz, interp_time]=interp_to_smooth(stored_xyz,stored_t);
+            
+            
+            plot3(interp_xyz(:,1),interp_xyz(:,2),interp_xyz(:,3),'k-','linewidth',1.25)
             %   plot3(stor_tr_crude(:,1),stor_tr_crude(:,2),stor_tr_crude(:,3),'o','linewidth',1.25)
             
+            % plotting project axis...
             plot3( [0.5 0.5],[-1 1],[where_low where_low],'k-')
             plot3(-[0.5 0.5],[-1 1],[where_low where_low],'k-')
             plot3(-[0.0 0.0],[-1 1],[where_low where_low],'k:')
@@ -176,34 +165,59 @@ fa=1;
             plot3(-[1 1],[-1 1],[where_low where_low]+0,'k:')
             plot3(-[1 1],[-1 -1],[0 1 ]+where_low,'k-')
             
-            %   list_t=2*(t/tmax)*(1:size(stor_tr,1))/size(stor_tr,1)-1;
-            list_t=2*(t/tmax)*(stor_t)/max(abs(stor_t))-1;
-            plot3( 0.5+0.5*stor_tr(:,1),list_t,stor_tr(:,3)*0+where_low,'g-','linewidth',1.25)
+            %plot projections
+            list_times=2*(t/tmax)*(interp_time)/max(abs(interp_time))-1;
+            plot3( 0.5+0.5*interp_xyz(:,1),list_times,interp_xyz(:,3)*0+where_low,'g-','linewidth',1.25)
+            plot3(-0.5+0.5*interp_xyz(:,2),list_times,interp_xyz(:,3)*0+where_low,'b-','linewidth',1.25)
+            plot3(interp_xyz(:,3)*0-1,list_times,0.5+0.5*interp_xyz(:,3)+where_low,'r-','linewidth',1.25)
             
-            
-            plot3(-0.5+0.5*stor_tr(:,2),list_t,stor_tr(:,3)*0+where_low,'b-','linewidth',1.25)
-            plot3(stor_tr(:,3)*0-1,list_t,0.5+0.5*stor_tr(:,3)+where_low,'r-','linewidth',1.25)
-            
+            %plot rf
+            if rf>1
+                color_pulse='g';
+                arrow([0 0 0 ],[1.1 0 0],'linewidth',1.5,'Color',color_pulse)
+                text(1.2, 0, 0,'RF','FontWeight','bold','Color',color_pulse)
+            end
             % phase_a=cos(anglet/360*2*pi)+j*sin(anglet/360*2*pi);%as complex number
             %  phase_a=phase_a/(abs(phase_a));
             %  [dist_in_hz erro_in_deg]=shap_fn3d(loopj-1,mainlooop,main_ratio);
             %  [dist_in_hz erro_in_deg]=shap_fn3d(loopj-1,mainlooop,main_ratio);
             
-            
             axis([ -1     1    -1     1    where_low     1])
             %plot3(store_traj(:,1),store_traj(:,2),store_traj(:,3),'k-','linewidth',1.5)
             %plot3(store_traj(:,1),store_traj(:,2),0*store_traj(:,3),'k-','linewidth',1)
-            axis off
             
+            axis off
             set(gcf,'color','w');
+            %define title
+            if rf>1
+                title_text=['Pulse ...'];
+            else
+                title_text=['Free evolution. '];
+            end
+            if R1==0
+                if R2==0
+                    title_text=[title_text ' T_1_ and T_2_ relaxation : OFF'];
+                else
+                    title_text=[title_text ' T_1_ relaxation : OFF'];
+                end
+            else
+                if R2==0
+                    title_text=[title_text ' T_2_ relaxation : OFF'];
+                end
+            end
+            text(0,0,1.22,title_text,'HorizontalAlignment','center')
+            
+            
             drawnow;
+            
+            % make sure the view is not changing (set according to first
+            % frame)
             tmp_frame = getframe;
             if counter_frames==1
                 si=size(tmp_frame.cdata);
             else
                 tmp_frame.cdata=tmp_frame.cdata(1:si(1,1),1:si(1,2),1:si(1,3));
             end
-            
             
             F(counter_frames)=tmp_frame;
             writeVideo(writerObj,F(counter_frames));
