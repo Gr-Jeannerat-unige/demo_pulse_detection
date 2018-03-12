@@ -16,13 +16,13 @@ for mainlooop=1:7
         fname='180_pulse_evolution';
     end
     if mainlooop==4
-        fname='Inversion_recovery_reading_pulse_detction_short_time';
+        fname='Inversion_recovery_reading_pulse_detection_short_time';
     end
     if mainlooop==5
-        fname='Inversion_recovery_reading_pulse_detction_medium_time';
+        fname='Inversion_recovery_reading_pulse_detection_medium_time';
     end
     if mainlooop==6
-        fname='Inversion_recovery_reading_pulse_detction_long_time';
+        fname='Inversion_recovery_reading_pulse_detection_long_time';
     end
     if mainlooop==7
         fname='90_pulse_evolution_short_T2_long_T1';
