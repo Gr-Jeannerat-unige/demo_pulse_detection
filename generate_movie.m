@@ -1,7 +1,33 @@
 clear all
 %for main_ratio=[ 0.01 1 0.5 0.2 0.1],
 %for mainlooop=0:6
-for mainlooop=0:6
+for mainlooop=1:7
+    fname=['mov_' num2str(mainlooop)];
+    if mainlooop==0
+        fname='Just_precession_turning_on_R1_and_R2';
+    end
+    if mainlooop==1
+        fname='90_pulse_evolution';
+    end
+    if mainlooop==2
+        fname='30_pulse_evolution';
+    end
+    if mainlooop==3
+        fname='180_pulse_evolution';
+    end
+    if mainlooop==4
+        fname='Inversion_recovery_reading_pulse_detction_short_time';
+    end
+    if mainlooop==5
+        fname='Inversion_recovery_reading_pulse_detction_medium_time';
+    end
+    if mainlooop==6
+        fname='Inversion_recovery_reading_pulse_detction_long_time';
+    end
+    if mainlooop==7
+        fname='90_pulse_evolution_short_T2_long_T1';
+    end
+    
     % for mainlooop=-3
     clear stored_xyz
     clear stored_t
@@ -15,7 +41,7 @@ for mainlooop=0:6
     %  ax.NextPlot = 'replaceChildren';
     
     
-    writerObj = VideoWriter(['mov_' num2str(mainlooop) '.avi']);
+    writerObj = VideoWriter([fname '.avi']);
     %  writerObj = VideoWriter(['mov_' num2str(mainlooop) '.mp4']);
     writerObj.Quality = 75;%75 is default
     
@@ -74,15 +100,17 @@ for mainlooop=0:6
             if t<(1/1000)
                 rf=10;larmo=0000.00001;
             end
-            if t>0.1
-                R2=0.5;
-            end
             if (t>0.18)
                 R1=1;
             end
+            if t>0.1
+                R2=0.5;
+                
+            end
+            
             
         else
-           
+            
             fa=1;
             tim=400*fa;
             rf_ref=20*fa;
@@ -91,7 +119,7 @@ for mainlooop=0:6
                     
                     rf=rf_ref/3;larmo=2;
                 else
-                    if mainlooop>=3
+                    if (mainlooop>=3) && (mainlooop<7)
                         
                         rf=rf_ref*2;larmo=0.00000001;
                     else
@@ -106,7 +134,11 @@ for mainlooop=0:6
                 % if t>0.18
                 R1=1;
                 %  end
-                
+                if mainlooop==7
+                    R2=8;
+                    R1=1;
+                end
+                 
             end
             if (t>=tau) && (t<=(tau+1/400))
                 rf=20;larmo=0.01;
@@ -152,6 +184,7 @@ for mainlooop=0:6
             
             
             plot3(interp_xyz(:,1),interp_xyz(:,2),interp_xyz(:,3),'k-','linewidth',1.25)
+            plot3(interp_xyz(:,1),interp_xyz(:,2),interp_xyz(:,3)*0,'k:','linewidth',0.5,'Color',[0.5 0.5 0.5])
             %   plot3(stor_tr_crude(:,1),stor_tr_crude(:,2),stor_tr_crude(:,3),'o','linewidth',1.25)
             
             % plotting project axis...
@@ -196,13 +229,13 @@ for mainlooop=0:6
             end
             if R1==0
                 if R2==0
-                    title_text=[title_text ' T_1_ and T_2_ relaxation : OFF'];
+                    title_text=[title_text ' T_1 = T_2 = \infty'];
                 else
-                    title_text=[title_text ' T_1_ relaxation : OFF'];
+                    title_text=[title_text ' T_1 = \infty'];
                 end
             else
                 if R2==0
-                    title_text=[title_text ' T_2_ relaxation : OFF'];
+                    title_text=[title_text ' T_2 = \infty'];
                 end
             end
             text(0,0,1.22,title_text,'HorizontalAlignment','center')
