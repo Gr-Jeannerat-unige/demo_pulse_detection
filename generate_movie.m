@@ -240,7 +240,7 @@ for mainlooop=1:7
             end
             text(0,0,1.22,title_text,'HorizontalAlignment','center')
             
-            
+            draw_unit_circle([0;0;0])
             drawnow;
             
             % make sure the view is not changing (set according to first
